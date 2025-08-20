@@ -138,13 +138,3 @@ See hardware/*/bom for full part lists.
 ## License
 
 Educational use. Include attribution to the original student team and honor third‑party library licenses.
-
-[1] https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/30039387/17f506f7-968f-4516-ada6-a4dd3ea6219b/Grp_7_Project_-slide_EEE316.pptx
-[2] https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/30039387/ccf66208-6573-4445-ba73-1ee7d9ef8a9b/project-report.docx
-[3] https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/30039387/ced6da97-2c90-4993-9b75-89a83f917235/EEE316_Grp_7_Project_Report.pdf
-[4] https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/30039387/652d0581-d2c2-4be7-a32e-66dfda80173d/projects-note.txt
-[5] https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/30039387/e6d33c1d-f43d-4b2b-9856-dc51bd478213/oscilo_code.txt
-[6] https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/30039387/7f60d985-6fd0-424d-904e-6557aaefbd14/project-report-template.docx
-[7] https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/images/30039387/a6b1d635-58fa-4dcc-a4e9-0028f7c88f5b/oscilo-_-circuit.jpg
-[8] https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/images/30039387/74fb9489-953a-410c-8b7e-7292dbaf0a5c/ps_-pcb_schematics.jpg
-[9] https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/images/30039387/b0693e54-18a7-45c9-a0bc-b7d8ffa0f4a3/ps_-circuit.jpg
