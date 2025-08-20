@@ -1,191 +1,150 @@
-Compact Oscilloscope + 0–30V/3A PSU (EEE316 Group 07)
-This repository contains schematics, PCB assets, firmware, and documentation for:
+# README.md — Compact Oscilloscope (Arduino Cloud, Arduino Uno) + 0–30V/3A Linear PSU
 
-A single‑channel compact oscilloscope (0–200kHz analog bandwidth class, 12‑bit display scaling, selectable time/div and volts/div, trigger modes).
+This repository hosts the designs, firmware, and documentation for two lab instruments built for EEE316:
+- A single‑channel compact oscilloscope implemented on Arduino Cloud using an Arduino Uno and a 0.96" SSD1306 OLED (optional TFT variant referenced in docs).
+- A linear adjustable power supply with 24VAC input and 0–30V, 2mA–3A output capability.
 
-A linear adjustable bench power supply with 24VAC input, 0–30V output, 2mA–3A current limit, and low ripple.
+The oscilloscope firmware and project configuration target Arduino Cloud as the primary development and deployment platform. Local Arduino IDE builds are still possible.
 
-The project was designed, simulated, fabricated, assembled, and tested as part of EEE316.
+## Repository layout
 
-Repository Structure
-hardware/
+- hardware/
+  - oscilloscope/
+    - schematics/           Oscilloscope schematic PDFs
+    - pcb/                  Board files, Gerbers, drills, assembly drawings
+    - bom/                  Bill of Materials (CSV with MPNs/footprints)
+  - psu/
+    - schematics/           PSU schematic PDFs (bridge, filters, TL081 loops)
+    - pcb/                  Gerbers, drills, assembly
+    - bom/                  BOM CSV
+- firmware/
+  - oscilloscope_arduino_cloud/   Sketch source used in Arduino Cloud (mirrors oscilo_code.txt)
+  - oscilloscope_arduino_oled/    Local build folder for Arduino IDE users
+- simulation/
+  - psu/                   Ripple/loop/transient sims (LTspice/Proteus models)
+  - afe/                   Attenuator + anti‑alias filter sims
+- docs/
+  - report/                Project report, slides, images
+  - bringup_guides/        Assembly, wiring, calibration notes
+  - calibration/           Procedures and data logs
 
-oscilloscope/
+If a folder is missing initially, it will be added with the next commit.
 
-schematics/ Schematic PDFs and source files
+## Oscilloscope — Overview
 
-pcb/ PCB files (Gerbers, drills, assembly drawings)
+- Platform: Arduino Uno (ATmega328P, 16MHz, 5V) deployed via Arduino Cloud.
+- Display: 0.96" SSD1306 I2C OLED (128×64).
+- Input: A0 analog input with optional 1×/10× attenuation selection; recommended use with 10× probe up to 50Vpk.
+- Controls:
+  - D8 SELECT, D9 UP, D10 DOWN, D11 HOLD (internal pull‑ups)
+  - D2 external interrupt for the button handling ISR
+- Features:
+  - Timebase: 50ms/div to 200µs/div (discrete ranges)
+  - Volts/div ranges with automatic scaling modes
+  - Rising/falling edge trigger and HOLD
+  - EEPROM‑backed settings (ranges/trigger persist across power cycles)
+- Sampling: Timer + analogRead() scheduling with prescaler changes per range.
+- Notes: This is an educational scope (≈0–200kHz class). For higher bandwidth, consider an external ADC/STM32 variant.
 
-bom/ BOM CSV with MPNs and footprints
+## Power Supply — Overview
 
-psu/
+- Input: 24VAC transformer (>90W for full 30V/3A capability)
+- Topology: Full bridge rectifier (1N5408) + bulk capacitor + linear regulation using TL081 op‑amps and pass transistor network (9014/9015).
+- Output: 0–30V adjustable, current limit 2mA–3A, ripple target ≈0.01% with proper layout/filters.
+- UI: Front‑panel potentiometers for voltage/current, status LED, binding posts.
+- Protections: Fuse, short‑circuit behavior tuned by current‑limit loop, adequate heat sinking required.
 
-schematics/
+## Bill of Materials (abridged)
 
-pcb/
-
-bom/
-
-firmware/
-
-oscilloscope_arduino_oled/ Arduino sketch for SSD1306 OLED scope
-
-oscilloscope_stm32_tft/ STM32F103 + ILI9341 TFT implementation (src, build files)
-
-simulation/
-
-psu_ltspice/ Loop, ripple, and transient sims
-
-afe_ltspice/ Attenuator + anti-alias filter + step response
-
-docs/
-
-report/ Project report and slides
-
-bringup_guides/ Assembly and bring-up notes
-
-calibration/ Procedures and data sheets for calibration
-
-If a directory is missing in the initial commit, it will be added as assets are finalized.
-
-Features
 Oscilloscope
-
-Input: up to 50Vpk with 10× probe; selectable 1×/10× path
-
-Timebase: 50ms/div to 200µs/div (Arduino OLED build) with trigger rising/falling
-
-Display: 0.96" SSD1306 OLED or 2.4" ILI9341 TFT
-
-Controls: SELECT, UP, DOWN, HOLD
-
-Storage: settings persisted in EEPROM/flash
-
-Optional: STM32 version with higher performance rendering and USB CDC
-
-Power Supply
-
-Input: 24VAC transformer (>90W for 30V/3A)
-
-Output: 0–30V adjustable, 2mA–3A current limit
-
-Architecture: bridge rectifier + bulk filter + TL081 op‑amp loops + pass transistor
-
-Indicators: LED status, panel pots for V and I
-
-Protections: input fuse, short-circuit handling, heat sinking
-
-Getting Started
-Prerequisites
-
-Ubuntu 22.04+ (recommended)
-
-KiCad 7/8 (to open/edit PCB and schematics)
-
-Arduino IDE 2.x (for OLED oscilloscope build)
-
-ARM GCC toolchain / STM32CubeIDE (for STM32 TFT build, optional)
-
-Python 3.10+ (utility scripts)
-
-Install Python libs:
-
-pip install -r requirements.txt
-
-Build: Oscilloscope (Arduino + SSD1306)
-Hardware
-
-Assemble the OLED scope PCB and connect buttons to D8–D11, INT0 on D2, analog in on A0, and an optional 1×/10× selector.
-
-Power from 9–12V DC jack or regulated 5V as per your board.
-
-Firmware
-
-Open firmware/oscilloscope_arduino_oled/_20190212_OLEDoscilloscope.ino in Arduino IDE.
-
-Install libraries: Adafruit GFX, Adafruit SSD1306, EEPROM (bundled).
-
-Board: Arduino Uno (ATmega328P) or compatible at 16MHz, 5V.
-
-Compile and upload.
-
-Calibration
-
-Connect the built-in test square wave (or a 1kHz, ~1Vpp generator).
-
-Adjust trimmers (if present) and perform probe compensation.
-
-Save settings; ranges persist in EEPROM.
-
-Build: Oscilloscope (STM32 + TFT, optional)
-Hardware
-
-Assemble STM32F103C8 MCU, ILI9341 SPI TFT, buttons, BNC input, op-amp AFE if used.
-
-Firmware
-
-Use STM32CubeIDE or GNU Arm Embedded Toolchain.
-
-Configure SPI DMA for display, timers/ADC/DMA for sampling, and GPIO for UI.
-
-Build and flash via SWD.
-
-Build: Power Supply
-Hardware
-
-Use 24VAC transformer (>90W recommended for 30V/3A).
-
-Assemble bridge (1N5408s), bulk capacitors (e.g., 3300–4700µF), TL081-based control loops, pass devices (9014/9015 per schematic), shunt (0.47Ω/5W), pots, and output terminals.
-
-Provide adequate heat sinking and ventilation.
-
-Bring‑up
-
-First power with a current‑limited bench supply on the DC bus if available.
-
-Verify reference rails, op‑amp outputs, and current‑limit loop at low voltage.
-
-Load test with dummy loads; measure ripple with a scope using a bandwidth limit and short ground spring.
-
-Simulations
-PSU: ripple vs load, step load transient, stability margins (phase/gain).
-
-AFE: Bode and time-domain step to confirm anti‑alias corner and settling.
-
-Files under simulation/ (LTspice or Proteus equivalents).
-
-Testing and Calibration
-Oscilloscope
-
-Short input to measure noise floor.
-
-1kHz sine at 1Vpp to verify scaling and trigger stability.
-
-Timebase check against a known 1MHz/100kHz reference if available.
-
-Power Supply
-
-No‑load voltage sweep 0–30V.
-
-Load regulation at 0.1A, 0.5A, 1A, 2A, 3A.
-
-Ripple measurement and thermal soak at 50–75% load.
-
-Safety
-Do not connect mains directly to the oscilloscope input.
-
-The PSU primary wiring must be insulated and fused; observe local electrical safety standards.
-
-Discharge capacitors before handling; use proper heat sinks on pass devices.
-
-Roadmap
-Multi‑channel oscilloscope option (2‑ch)
-
-Advanced triggering and on‑device FFT
-
-Digital panel meters for PSU with UART logging
-
-USB data streaming and PC client
-
-License
-Educational project. If redistributing, include attribution to the original student team and respect third-party library licenses.
+- Arduino Uno (ATmega328P)
+- SSD1306 0.96" OLED (I2C, 0x3C)
+- Tact switches ×4, LED (optional)
+- Resistor network for attenuation and biasing as per schematic
+- Optional: 10× probe, BNC/SMA input connector, TVS/ESD parts
+
+PSU
+- 24VAC transformer (≥90W for 30V/3A)
+- 1N5408 diodes (bridge)
+- Electrolytics (e.g., 3300–4700µF/50V), film caps
+- TL081 op‑amps, small‑signal transistors 9014/9015
+- Shunt resistor 0.47Ω/5W
+- Pots for V/I adjust, binding posts, fuse, heatsinks
+
+See hardware/*/bom for full part lists.
+
+## Hardware wiring (Oscilloscope)
+
+- OLED I2C: SDA → A4, SCL → A5, VCC → 5V, GND → GND
+- Buttons: SELECT→D8, UP→D9, DOWN→D10, HOLD→D11 (to GND on press; relies on internal pull‑ups)
+- INT: D2 configured as external interrupt for button state capture
+- Signal input: to A0 via the front‑end network (divider/attenuator/ESD, as per schematic)
+- Optional 1×/10× control signal: D12 used as output/Hi‑Z per code to emulate path selection
+
+## Develop and deploy (Arduino Cloud)
+
+1) Create a new Arduino Cloud Thing
+- Add a Sketch and copy the oscilloscope code from firmware/oscilloscope_arduino_cloud (or oscilo_code.txt).
+- Board: Arduino Uno.
+- Libraries (add via Library Manager in Arduino Cloud):
+  - Adafruit GFX Library
+  - Adafruit SSD1306
+  - EEPROM (bundled with AVR core)
+
+2) Variables/Secrets
+- No cloud variables required for the basic build.
+- Ensure I2C address 0x3C matches your OLED module.
+
+3) Compile and Upload
+- Connect the Uno over USB.
+- From Arduino Cloud Web Editor, Verify → Upload.
+- On first boot the sketch initializes EEPROM defaults; settings persist thereafter.
+
+## Local build (optional, Arduino IDE)
+
+- Open firmware/oscilloscope_arduino_oled/_20190212_OLEDoscilloscope.ino
+- Board: Arduino Uno
+- Install libraries:
+  - Adafruit GFX
+  - Adafruit SSD1306
+- Compile and upload via USB.
+
+## Calibration and use (Oscilloscope)
+
+- Power: 9–12V DC input to the board or 5V via USB (match your assembly’s power routing).
+- Probe compensation: Use a 1kHz square wave source. Adjust trimmers if present; verify flat tops and sharp edges.
+- Timebase/Volts: Use SELECT to choose field, UP/DOWN to adjust; HOLD freezes display.
+- Safety: With 10× probe, limit to ≤50Vpk; never connect to mains directly; use isolation and proper grounding.
+
+## PSU bring‑up checklist
+
+- First power the low‑voltage control section from a current‑limited bench supply if available.
+- Verify reference and op‑amp rails, then connect the 24VAC transformer.
+- Sweep the voltage setpoint with no load; verify current‑limit action using a dummy load.
+- Measure ripple with a scope using a short ground spring and bandwidth limit.
+
+## Known limitations
+
+- Uno ADC sampling and OLED refresh cap total throughput; rapidly changing high‑frequency signals will alias.
+- PSU thermal performance depends on heatsink sizing and enclosure airflow.
+- Layout and wiring quality strongly affect noise/ripple; follow the provided placement notes.
+
+## Roadmap
+
+- Optional STM32 + TFT path with DMA rendering and faster acquisition
+- USB serial waveform dump and PC plotting script
+- Digital panel meter and UART logging for PSU
+
+## License
+
+Educational use. Include attribution to the original student team and honor third‑party library licenses.
+
+[1] https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/30039387/17f506f7-968f-4516-ada6-a4dd3ea6219b/Grp_7_Project_-slide_EEE316.pptx
+[2] https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/30039387/ccf66208-6573-4445-ba73-1ee7d9ef8a9b/project-report.docx
+[3] https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/30039387/ced6da97-2c90-4993-9b75-89a83f917235/EEE316_Grp_7_Project_Report.pdf
+[4] https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/30039387/652d0581-d2c2-4be7-a32e-66dfda80173d/projects-note.txt
+[5] https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/30039387/e6d33c1d-f43d-4b2b-9856-dc51bd478213/oscilo_code.txt
+[6] https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/30039387/7f60d985-6fd0-424d-904e-6557aaefbd14/project-report-template.docx
+[7] https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/images/30039387/a6b1d635-58fa-4dcc-a4e9-0028f7c88f5b/oscilo-_-circuit.jpg
+[8] https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/images/30039387/74fb9489-953a-410c-8b7e-7292dbaf0a5c/ps_-pcb_schematics.jpg
+[9] https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/images/30039387/b0693e54-18a7-45c9-a0bc-b7d8ffa0f4a3/ps_-circuit.jpg
