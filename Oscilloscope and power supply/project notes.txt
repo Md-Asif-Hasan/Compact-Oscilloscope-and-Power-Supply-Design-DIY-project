@@ -1,0 +1,16 @@
+Description:
+1. The potentiometer can be directly soldered on the board, or it can be led to the panel installation. The kit is equipped with a connecting socket and a connecting wire.
+2. The power transformer uses 24V AC output, and the power can be selected as needed. For 30V3A output, the transformer power needs to be greater than 90W.
+
+Specifications:
+Color:multicolor
+Model: 21-0500
+Type: Other IC
+Power: 1
+Uses: 1
+Input voltage: 24V AC (large)
+Input current: 3A (large)
+Output voltage: 0-30V continuously adjustable
+Output current limit: 2mA-3A continuously adjustable
+Output voltage ripple: 0.01% (large)
+PCB size: 84 * 84 mm

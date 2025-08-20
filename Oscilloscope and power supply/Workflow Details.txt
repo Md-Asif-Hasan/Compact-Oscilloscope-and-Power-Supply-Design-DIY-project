@@ -1,0 +1,96 @@
+Modular Workflow
+Module A: Requirements and Project Scoping
+
+A1. Define oscilloscope specs: channels(1), sample rate(1Msps Arduino/STM32 class), bandwidth(0–200kHz per report), input range(±50Vpk with probe), display(2.4" TFT or 0.96" OLED), triggers(edge, single/normal/auto), supply(9–12VDC).
+
+A2. Define PSU specs: input(24VAC transformer), output(0–30V), current limit(2mA–3A), ripple target(~0.01%), protections(fuse, short-circuit behavior), board size(≈84×84mm).
+
+A3. Set constraints: cost, BOM availability, lab tools, timeline, documentation deliverables.
+
+Module B: System Architecture
+
+B1. Oscilloscope: input protection + attenuator → amplifier/filter → MCU ADC or external ADC → trigger logic → frame buffer → display.
+
+B2. PSU: AC input → bridge rectifier → bulk filter → regulation (op-amp + pass device + feedback loops) → current-limit path → outputs + protection + UI.
+
+B3. Interfaces: buttons (SELECT/UP/DOWN/HOLD), USB power/programming, SWD header, BNC/SMA for signal input.
+
+B4. Power domains: isolate analog vs digital rails where possible; ground strategy and star point for sensitive nodes.
+
+Module C: Schematic Design
+
+C1. Oscilloscope schematics (Proteus/KiCad/PCBweb):
+
+Input: TVS/limiter, 1×/10× path (jumper/switch), RC anti-alias filter.
+
+Analog: TL084/TL081-based conditioning (if used), or direct to MCU ADC.
+
+Digital: STM32F103C8 (or Arduino UNO variant in OLED sketch), OLED/TFT display header, buttons, LED, encoder.
+
+Trigger: comparator path or software threshold.
+
+Connectors: BNC/SMA, USB, SWD, power jack.
+
+C2. PSU schematics:
+
+Bridge: 1N5408 array.
+
+Smoothing: 3300–4700µF electrolytic + snubbers.
+
+Regulation: TL081 op-amps, 9014/9015 pass/control transistors, sense resistors, current-limit op-amp loop, reference zeners.
+
+UI: potentiometers for V/I, indicator LED, output binding posts.
+
+Safety: input fuse, reverse clamp, bleeders.
+
+Module D: Component Selection and BOM
+
+D1. Oscilloscope: STM32F103C8, TL084, LM1117-3.3, OLED SSD1306 0.96" or 2.4" ILI9341 TFT, 1N5819/1N400x, 0805 passives, crystal 8MHz, regulators 78L05/79L05 if needed, BNC, tact switches.
+
+D2. PSU: 24VAC transformer (>90W for 30V/3A), 1N5408 bridge, TL081 op-amps, 9014/9015 transistors, zeners 5.1V, power resistor 0.47Ω/5W shunt, electrolytics, film caps, trimmers, binding posts, heat sinks.
+
+D3. Footprints: 0603/0805 passives, SO14 for TL084, TO-220/TOP for pass transistor or discrete pair, through-hole electrolytics.
+
+Module E: PCB Layout
+
+E1. Layer plan: 2–4 layers; keep PSU high-current/AC loops short and separated; keep oscilloscope analog path compact.
+
+E2. Grounding: star ground near sense node; avoid display/logic noise into analog front end.
+
+E3. Routing: keep ADC/analog lines short; separate SMPS or rectifier region; add guard traces if needed.
+
+E4. Thermal: copper pours and heatsink planning for regulator/pass devices.
+
+E5. Test points: VIN, VOUT, GND, sense points, trigger out.
+
+Module F: Simulation and Validation
+
+F1. Proteus/Multisim/LTspice: validate PSU loop stability, ripple, load transients; check oscilloscope anti-alias corner and step response.
+
+F2. Edge cases: short-circuit behavior, sudden load steps, input brown-out; oscilloscope trigger robustness and input protection capacitance impact.
+
+Module G: Fabrication and Assembly
+
+G1. Generate outputs: schematic PDFs, BOM CSV, netlist, Gerbers, drills, pick-and-place, assembly drawings.
+
+G2. Order boards and parts; stencil recommended for fine pitch.
+
+G3. Assembly order: PSU low-voltage first, bring-up with current-limited bench supply; for scope, assemble MCU + power + display header → program → then analog input.
+
+Module H: Firmware Development
+
+H1. For OLED Arduino design: compile the provided .ino with Adafruit SSD1306/GFX and EEPROM libraries; map GPIO to buttons (D8–D11), INT0 on D2; calibrate ranges.
+
+H2. For STM32 design: HAL init, DMA sampling to frame buffer, trigger logic, scaling, rendering to TFT via SPI with DMA, UI state machine, calibration constants in flash/EEPROM.
+
+H3. Utilities: CSV export via UART/USB CDC, simple FFT optional.
+
+Module I: Testing, Calibration, and Documentation
+
+I1. PSU: no-load voltage sweep, load regulation at multiple currents, ripple measurement with probe bandwidth limit, thermal soak.
+
+I2. Oscilloscope: probe compensation using test square wave, volts/div and timebase checks, trigger stability, noise floor with input short.
+
+I3. Compare to lab scope for calibration factors; store offsets/gains.
+
+I4. Document results, limitations, and future enhancements.
